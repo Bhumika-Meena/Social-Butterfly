@@ -2,17 +2,24 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const app = require("./app");
-const { connectMongo } = require("./config/db");
+const { connectMongo, getMongoUri } = require("./config/db");
 
 const PORT = process.env.PORT || 5000;
 
 async function start() {
-  if (!process.env.JWT_SECRET) {
-    throw new Error("Missing JWT_SECRET in environment variables.");
+  const jwtSecret = process.env.JWT_SECRET || process.env.AUTH_JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error("Missing JWT secret. Set JWT_SECRET (or AUTH_JWT_SECRET).");
   }
-  if (!process.env.MONGO_URI) {
-    throw new Error("Missing MONGO_URI in environment variables.");
+
+  const mongoUri = getMongoUri();
+  if (!mongoUri) {
+    throw new Error("Missing Mongo URI. Set MONGO_URI (or MONGODB_URI).");
   }
+
+  // Normalize aliases so downstream code always sees canonical names.
+  process.env.JWT_SECRET = jwtSecret;
+  process.env.MONGO_URI = mongoUri;
 
   await connectMongo();
   app.listen(PORT, () => {

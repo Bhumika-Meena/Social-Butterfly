@@ -1,9 +1,13 @@
 const mongoose = require("mongoose");
 
+function getMongoUri() {
+  return process.env.MONGO_URI || process.env.MONGODB_URI || "";
+}
+
 async function connectMongo() {
-  const uri = process.env.MONGO_URI;
+  const uri = getMongoUri();
   if (!uri) {
-    throw new Error("Missing MONGO_URI in environment variables.");
+    throw new Error("Missing Mongo URI. Set MONGO_URI (or MONGODB_URI).");
   }
 
   // Mongoose connections pool defaults are fine for this assignment
@@ -12,5 +16,5 @@ async function connectMongo() {
   console.log("MongoDB connected");
 }
 
-module.exports = { connectMongo };
+module.exports = { connectMongo, getMongoUri };
 
